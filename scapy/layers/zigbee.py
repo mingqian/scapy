@@ -459,7 +459,8 @@ class ZigbeeNWKCommandPayload(Packet):
 def util_mic_len(pkt):
     ''' Calculate the length of the attribute value field '''
     if (pkt.nwk_seclevel == 0):  # no encryption, no mic
-        return 0
+        # return 0
+        return 4    # defaults to ENC-MIC-32, correct for ZigBee 3.0?
     elif (pkt.nwk_seclevel == 1):  # MIC-32
         return 4
     elif (pkt.nwk_seclevel == 2):  # MIC-64
@@ -510,7 +511,7 @@ class ZigbeeSecurityHeader(Packet):
         ConditionalField(ByteField("key_seqnum", 0), lambda pkt: pkt.getfieldval("key_type") == 1),  # noqa: E501
         # Payload
         # the length of the encrypted data is the payload length minus the MIC
-        StrField("data", ""),  # noqa: E501
+        XStrField("data", ""),  # noqa: E501
         # Message Integrity Code (0/variable in size), length depends on nwk_seclevel  # noqa: E501
         XStrField("mic", ""),
     ]

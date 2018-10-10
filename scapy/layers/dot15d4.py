@@ -240,8 +240,9 @@ class Dot15d4Data(Packet):
                 _msg = "Unknown conf.dot15d4_protocol value: must be in "
             warning(_msg +
                     "['sixlowpan', 'zigbee']" +
-                    " Defaulting to SixLoWPAN")
-            return SixLoWPAN
+                    " Defaulting to ZigbeeNWK")
+            # return SixLoWPAN
+            return ZigbeeNWK
 
     def mysummary(self):
         return self.sprintf("802.15.4 Data ( %Dot15d4Data.src_panid%:%Dot15d4Data.src_addr% -> %Dot15d4Data.dest_panid%:%Dot15d4Data.dest_addr% )")  # noqa: E501
@@ -438,6 +439,23 @@ class Dot15d4CmdGTSReq(Packet):
         return self.sprintf("802.15.4 GTS Request Command ( %Dot15d4CmdGTSReq.gts_len% : %Dot15d4CmdGTSReq.gts_dir% )")  # noqa: E501
 
 
+class Zboss(Packet):
+    name = "ZBOSS Dump"
+    fields_desc = [
+        ByteField("Z", 'Z'),
+        ByteField("B", 'B'),
+        ByteField("O", 'O'),
+        ByteField("S", 'S'),
+        ByteField("S", 'S'),
+        BitEnumField("zboss_dir", 0, 1, {0: "IN"}),
+        BitEnumField("zboss_band", 0, 7, {0: "2.4GHz"}),
+        ByteField("channel", 0),
+        XLEIntField("trace_num", 0),
+    ]
+
+    def guess_payload_class(self, payload):
+        return Dot15d4FCS
+
 # PAN ID conflict notification command frame is not necessary, only Dot15d4Cmd with cmd_id = 5 ("PANIDConflictNotify")  # noqa: E501
 # Orphan notification command not necessary, only Dot15d4Cmd with cmd_id = 6 ("OrphanNotify")  # noqa: E501
 
@@ -448,5 +466,6 @@ bind_layers(Dot15d4, Dot15d4Ack, fcf_frametype=2)
 bind_layers(Dot15d4, Dot15d4Cmd, fcf_frametype=3)
 
 # DLT Types #
-conf.l2types.register(DLT_IEEE802_15_4_WITHFCS, Dot15d4FCS)
+conf.l2types.register(DLT_IEEE802_15_4_WITHFCS, Zboss)
+# conf.l2types.register(DLT_IEEE802_15_4_WITHFCS, Dot15d4FCS)
 conf.l2types.register(DLT_IEEE802_15_4_NOFCS, Dot15d4)
